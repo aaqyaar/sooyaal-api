@@ -9,7 +9,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 export class UserService {
   constructor(private prisma: PrismaService) {}
   // make object of the encryption class
-  private auth = new AuthService();
+  private auth = new AuthService(this.prisma);
   async create(createUserDto: CreateUserDto): Promise<IUserResponse> {
     const { name, email, password } = createUserDto;
     const isExist = await this.prisma.user.findUnique({
@@ -52,7 +52,7 @@ export class UserService {
   }
 
   update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+    return `This action updates a #${id} user ${updateUserDto}`;
   }
 
   async remove(id: string) {

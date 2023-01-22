@@ -12,3 +12,9 @@ export interface IUserResponse {
   data: IUser[] | IUser | null;
   message: string;
 }
+
+export interface AuthData {
+  data: IUser | null;
+  token: string;
+  error: string | null;
+}
