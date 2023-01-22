@@ -3,48 +3,52 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 import { AuthService } from 'src/auth/auth.service';
-import { IUserResponse } from 'src/interfaces/user.interface';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { User, UserDocument } from 'src/schema/user.schema';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UserService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
+  ) {}
+
   // make object of the encryption class
-  private auth = new AuthService(this.prisma);
-  async create(createUserDto: CreateUserDto): Promise<IUserResponse> {
-    const { name, email, password } = createUserDto;
-    const isExist = await this.prisma.user.findUnique({
-      where: {
-        email,
-      },
+  private auth = new AuthService(this.userModel);
+  async create(createUserDto: CreateUserDto): Promise<any> {
+    const { email, password, phone } = createUserDto;
+    // find by phone or email and throw exception
+    const isExist = await this.userModel.findOne({
+      $or: [{ email }, { phone }],
     });
-    if (isExist?.email) {
-      throw new BadRequestException('Email already exist');
+
+    if (isExist?.email || isExist?.phone) {
+      throw new BadRequestException('Email or Phone already exist');
     }
+
     const hashedPassword = await this.auth.hashPassword(password);
-    const user = await this.prisma.user.create({
-      data: {
-        name,
-        email,
-        password: hashedPassword,
-      },
-    });
+
+    // createUserDTO change the password to hashedPassword and return the object
+    const data = {
+      ...createUserDto,
+      password: hashedPassword,
+    };
+
+    const user = await this.userModel.create(data);
     return { data: user, status: true, message: 'User created successfully' };
   }
 
-  async findAll(): Promise<IUserResponse> {
-    const user = await this.prisma.user.findMany();
+  async findAll(): Promise<any> {
+    const user = await this.userModel.find();
     return { data: user, status: true, message: 'Users found successfully' };
   }
 
-  async findOne(id: string): Promise<IUserResponse> {
-    const user = await this.prisma.user.findUnique({
-      where: {
-        id,
-      },
+  async findOne(id: string): Promise<any> {
+    const user = await this.userModel.findById({
+      id,
     });
     if (!user?.email) {
       throw new NotFoundException('User not found');
@@ -57,18 +61,14 @@ export class UserService {
   }
 
   async remove(id: string) {
-    const findUser = await this.prisma.user.findUnique({
-      where: {
-        id,
-      },
+    const findUser = await this.userModel.findById({
+      id,
     });
     if (!findUser) {
       throw new NotFoundException('User not foud');
     }
-    await this.prisma.user.delete({
-      where: {
-        id,
-      },
+    await this.userModel.deleteOne({
+      id,
     });
 
     return {

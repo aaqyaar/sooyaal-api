@@ -10,4 +10,10 @@ export class CreateUserDto {
   @IsString()
   @IsNotEmpty()
   password: string;
+
+  phone?: string;
+
+  photoURL?: string;
+
+  isConfirmed: boolean;
 }
