@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { login } from './dto/auth.dto';
 import * as bcrypt from 'bcryptjs';
 import * as jwt from 'jsonwebtoken';
@@ -33,13 +37,13 @@ export class AuthService {
       },
     });
     if (!user?.email) {
-      return { error: 'User not found', data: null, token: '' };
+      throw new NotFoundException('Email not exist');
     }
     const isPasswordValid = await this.comparePassword(password, user.password);
     if (!isPasswordValid) {
-      return { error: 'Invalid Password', data: null, token: '' };
+      throw new BadRequestException('Password not valid');
     }
     const token = await this.generateToken(user.id);
-    return { data: user, token, error: null };
+    return { data: user, token };
   }
 }

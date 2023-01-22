@@ -16,5 +16,4 @@ export interface IUserResponse {
 export interface AuthData {
   data: IUser | null;
   token: string;
-  error: string | null;
 }

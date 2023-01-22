@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { AuthService } from 'src/auth/auth.service';
 import { IUserResponse } from 'src/interfaces/user.interface';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -18,7 +22,7 @@ export class UserService {
       },
     });
     if (isExist?.email) {
-      return { message: 'User already exists', status: false, data: null };
+      throw new BadRequestException('Email already exist');
     }
     const hashedPassword = await this.auth.hashPassword(password);
     const user = await this.prisma.user.create({
@@ -33,9 +37,6 @@ export class UserService {
 
   async findAll(): Promise<IUserResponse> {
     const user = await this.prisma.user.findMany();
-    if (user.length === 0) {
-      return { message: 'No user found', status: false, data: null };
-    }
     return { data: user, status: true, message: 'Users found successfully' };
   }
 
@@ -45,8 +46,8 @@ export class UserService {
         id,
       },
     });
-    if (!user) {
-      return { message: 'No user found', status: false, data: null };
+    if (!user?.email) {
+      throw new NotFoundException('User not found');
     }
     return { data: user, status: true, message: 'User found successfully' };
   }
@@ -62,7 +63,7 @@ export class UserService {
       },
     });
     if (!findUser) {
-      return { message: 'No user found', status: false, data: null };
+      throw new NotFoundException('User not foud');
     }
     await this.prisma.user.delete({
       where: {
