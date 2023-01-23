@@ -3,26 +3,27 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Prisma } from '@prisma/client';
+
 import { AuthService } from 'src/auth/auth.service';
-import { User, UserDocument } from 'src/schema/user.schema';
+import { PrismaService } from 'src/prisma/prisma.service';
+
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UserService {
-  constructor(
-    @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   // make object of the encryption class
-  private auth = new AuthService(this.userModel);
-  async create(createUserDto: CreateUserDto): Promise<any> {
+  private auth = new AuthService(this.prisma);
+  async create(createUserDto: Prisma.UserCreateInput): Promise<any> {
     const { email, password, phone } = createUserDto;
     // find by phone or email and throw exception
-    const isExist = await this.userModel.findOne({
-      $or: [{ email }, { phone }],
+    const isExist = await this.prisma.user.findFirst({
+      where: {
+        OR: [{ email }, { phone }],
+      },
     });
 
     if (isExist?.email || isExist?.phone) {
@@ -32,23 +33,26 @@ export class UserService {
     const hashedPassword = await this.auth.hashPassword(password);
 
     // createUserDTO change the password to hashedPassword and return the object
-    const data = {
-      ...createUserDto,
-      password: hashedPassword,
-    };
 
-    const user = await this.userModel.create(data);
+    const user = await this.prisma.user.create({
+      data: {
+        ...createUserDto,
+        password: hashedPassword,
+      },
+    });
     return { data: user, status: true, message: 'User created successfully' };
   }
 
   async findAll(): Promise<any> {
-    const user = await this.userModel.find();
+    const user = await this.prisma.user.findMany();
     return { data: user, status: true, message: 'Users found successfully' };
   }
 
   async findOne(id: string): Promise<any> {
-    const user = await this.userModel.findById({
-      id,
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id,
+      },
     });
     if (!user?.email) {
       throw new NotFoundException('User not found');
@@ -61,14 +65,18 @@ export class UserService {
   }
 
   async remove(id: string) {
-    const findUser = await this.userModel.findById({
-      id,
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id,
+      },
     });
-    if (!findUser) {
+    if (!user) {
       throw new NotFoundException('User not foud');
     }
-    await this.userModel.deleteOne({
-      id,
+    await this.prisma.user.delete({
+      where: {
+        id,
+      },
     });
 
     return {

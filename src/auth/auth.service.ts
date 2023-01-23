@@ -6,12 +6,12 @@ import {
 import { login } from './dto/auth.dto';
 import * as bcrypt from 'bcryptjs';
 import * as jwt from 'jsonwebtoken';
-import { UserDocument } from 'src/schema/user.schema';
-import { Model } from 'mongoose';
+
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly userModel: Model<UserDocument>) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async generateToken(id: string) {
     return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -32,8 +32,10 @@ export class AuthService {
 
   async login(auth: login): Promise<any> {
     const { email, password } = auth;
-    const user = await this.userModel.findOne({
-      email,
+    const user = await this.prisma.user.findUnique({
+      where: {
+        email,
+      },
     });
     if (!user?.email) {
       throw new NotFoundException('Email not exist');

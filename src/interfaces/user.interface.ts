@@ -1,11 +1,11 @@
-import { UserDocument } from 'src/schema/user.schema';
+import { User } from '@prisma/client';
 
-export interface IUser extends UserDocument {
+export interface IUser {
   id: string;
   name: string;
   email: string;
   password: string;
-  phone?: string;
+  phone: string;
   isConfirmed: boolean;
   photoURL?: string;
   createdAt?: Date;

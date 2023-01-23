@@ -1,13 +1,15 @@
 import { Module } from '@nestjs/common';
 
 import { UserModule } from './user';
-import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from './auth';
+import { PrismaModule } from './prisma/prisma.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
-    MongooseModule.forRoot(process.env.DATABASE_URL),
-
+    ConfigModule.forRoot({ isGlobal: true }),
+    PrismaModule,
+    // MongooseModule.forRoot(process.env.DATABASE_URL),
     UserModule,
     AuthModule,
   ],
