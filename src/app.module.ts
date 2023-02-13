@@ -4,6 +4,7 @@ import { UserModule } from './user';
 import { AuthModule } from './auth';
 import { PrismaModule } from './prisma/prisma.module';
 import { ConfigModule } from '@nestjs/config';
+import { PostsModule } from './posts/posts.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { ConfigModule } from '@nestjs/config';
     // MongooseModule.forRoot(process.env.DATABASE_URL),
     UserModule,
     AuthModule,
+    PostsModule,
   ],
 })
 export class AppModule {}

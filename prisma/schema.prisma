@@ -28,8 +28,10 @@ model Post {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   title     String
   content   String
+  photoURL  String[]
   published Boolean  @default(false)
-  author    User     @relation(fields: [authorId], references: [id])
+  isPublic  Boolean  @default(false)
+  author    User?     @relation(fields: [authorId], references: [id])
   authorId  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
