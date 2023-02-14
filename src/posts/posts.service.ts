@@ -28,6 +28,20 @@ export class PostsService {
     });
   }
 
+  findPublishedAndPublic() {
+    return this.prisma.post.findMany({
+      where: {
+        published: true,
+        isPublic: true,
+      },
+      include: {
+        author: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }
   findOne(id: number) {
     return `This action returns a #${id} post`;
   }

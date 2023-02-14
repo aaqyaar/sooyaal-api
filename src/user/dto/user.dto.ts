@@ -1,4 +1,5 @@
 import { IsString, IsNotEmpty } from 'class-validator';
+import { PartialType } from '@nestjs/mapped-types';
 
 export class CreateUserDto {
   @IsString()
@@ -16,4 +17,10 @@ export class CreateUserDto {
   photoURL?: string;
 
   isConfirmed: boolean;
+}
+
+export class UpdateUserDto extends PartialType(CreateUserDto) {
+  @IsString()
+  @IsNotEmpty()
+  id: string;
 }

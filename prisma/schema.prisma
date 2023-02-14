@@ -37,7 +37,14 @@ model Post {
   updatedAt DateTime @updatedAt
 }
 
+
+
+
+
 enum ROLE {
   ADMIN
   USER
 }
+
+
+

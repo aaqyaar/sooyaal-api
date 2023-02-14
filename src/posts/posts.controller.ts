@@ -1,12 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
 
@@ -24,6 +16,14 @@ export class PostsController {
     return this.postsService.findAll();
   }
 
+  /**
+   *
+   * @get public and published posts
+   */
+  @Get('public')
+  findPublishedAndPublic() {
+    return this.postsService.findPublishedAndPublic();
+  }
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.postsService.findOne(+id);
